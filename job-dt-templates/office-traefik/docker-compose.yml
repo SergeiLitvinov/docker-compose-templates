@@ -1,0 +1,35 @@
+version: '2'
+
+networks:
+  default:
+    name: network
+
+services:
+  traefik:
+    image: traefik:latest
+    container_name: office-traefik
+    restart: always
+    security_opt:
+      - no-new-privileges:true
+    ports:
+      - "80:80"
+      - "443:443"
+    expose:
+      - "8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - office-traefik_data:/etc/traefik/
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.traefik.entrypoints=websecure"
+      - "traefik.http.routers.traefik.rule=Host(`traefik.xn--80apqkhcno.xn--p1ai`)"
+      - "traefik.http.routers.traefik.tls=true"
+      - "traefik.http.routers.traefik.tls.certresolver=letsEncrypt"
+      - "traefik.http.routers.traefik.service=api@internal"
+      - "traefik.http.services.traefik.loadbalancer.server.port=8080"
+      - "traefik.http.routers.traefik.middlewares=traefikstrip"
+      - "traefik.http.middlewares.traefikstrip.stripprefix.prefixes=/traefik"
+
+volumes:
+  office-traefik_data:
+    external: true
