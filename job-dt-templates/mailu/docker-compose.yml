@@ -15,7 +15,7 @@ services:
       - VIRTUAL_HOST=
       - LETSENCRYPT_HOST=
       - LETSENCRYPT_EMAIL=
-    env_file: .env
+    env_file: mailu.env
 #    logging:
 #      driver: journald
 #      options:
@@ -57,7 +57,7 @@ services:
     image: ${DOCKER_ORG:-ghcr.io/mailu}/${DOCKER_PREFIX:-}dovecot:${MAILU_VERSION:-2.0}
     restart: always
     container_name: mail-imap-dovecot
-    env_file: .env
+    env_file: mailu.env
     volumes:
       - "./data:/data"
       - "./mail:/mail"
@@ -74,7 +74,7 @@ services:
     image: ${DOCKER_ORG:-ghcr.io/mailu}/${DOCKER_PREFIX:-}postfix:${MAILU_VERSION:-2.0}
     restart: always
     container_name: mail-smtp-postfix
-    env_file: .env
+    env_file: mailu.env
 #    logging:
 #      driver: journald
 #      options:
@@ -108,7 +108,7 @@ services:
     restart: always
     container_name: mail-antispam-rspamd
 #    hostname: antispam
-    env_file: .env
+    env_file: mailu.env
 #    logging:
 #      driver: journald
 #      options:
@@ -132,7 +132,7 @@ services:
     image: ${DOCKER_ORG:-ghcr.io/mailu}/${DOCKER_PREFIX:-}clamav:${MAILU_VERSION:-2.0}
     restart: always
     container_name: mail-antivirus
-    env_file: .env
+    env_file: mailu.env
     volumes:
     - "./filter:/data"
     depends_on:
@@ -146,7 +146,7 @@ services:
     image: ${DOCKER_ORG:-ghcr.io/mailu}/${DOCKER_PREFIX:-}radicale:${MAILU_VERSION:-2.0}
     restart: always
     container_name: mail-webdav
-    env_file: .env
+    env_file: mailu.env
     volumes:
       - "./dav:/data"
     dns:
@@ -158,7 +158,7 @@ services:
     image: ${DOCKER_ORG:-ghcr.io/mailu}/${DOCKER_PREFIX:-}admin:${MAILU_VERSION:-2.0}
     restart: always
     container_name: mail-admin
-    env_file: .env
+    env_file: mailu.env
 #    logging:
 #      driver: journald
 #      options:
@@ -179,7 +179,7 @@ services:
     image: ${DOCKER_ORG:-ghcr.io/mailu}/${DOCKER_PREFIX:-}webmail:${MAILU_VERSION:-2.0}
     restart: always
     container_name: mail-web-roundcube
-    env_file: .env
+    env_file: mailu.env
     volumes:
       - "./webmail:/data"
       - "./overrides/roundcube:/overrides:ro"
@@ -194,7 +194,7 @@ services:
     image: ${DOCKER_ORG:-ghcr.io/mailu}/${DOCKER_PREFIX:-}fetchmail:${MAILU_VERSION:-2.0}
     restart: always
     container_name: mail-fetchmail
-    env_file: .env
+    env_file: mailu.env
     volumes:
       - "./data:/data"
     depends_on:
