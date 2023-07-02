@@ -1,0 +1,120 @@
+version: '2'
+
+networks:
+  default:
+    external:
+      name: network
+
+services:
+     
+  db:
+    container_name: data-db
+    image: postgres:latest
+    restart: always
+    volumes:
+      - postgresdb:/var/lib/postgresql/data
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    environment:
+      - POSTGRES_PASSWORD=
+      - POSTGRES_DB=
+      - POSTGRES_USER=
+    networks:
+      - default
+
+  app:
+    container_name: data
+    image: nextcloud:latest
+    restart: always
+    links:
+      - db
+      - redis
+    volumes:
+      - nextcloud:/var/www/html
+      - /media/raid:/data
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    environment:
+      - VIRTUAL_HOST=data.
+      - LETSENCRYPT_HOST=
+      - LETSENCRYPT_EMAIL=
+      - POSTGRES_HOST=db
+      - POSTGRES_USER=
+      - POSTGRES_DB=
+      - POSTGRES_PASSWORD=
+      - REDIS_HOST=redis
+      - REDIS_HOST_PASSWORD=
+    networks:
+      - default
+      
+  cron:
+    container_name: data-cron
+    image: rcdailey/nextcloud-cronjob
+    restart: always
+    links:
+      - app
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    environment:
+      - NEXTCLOUD_CONTAINER_NAME=data
+    networks:
+      - default
+      
+  onlyoffice-document-server:
+    container_name: data-doc-server
+    image: onlyoffice/documentserver:latest
+    stdin_open: true
+    tty: true
+    restart: always
+    volumes:
+      - doc_server:/var/www/onlyoffice/Data
+      - doc_server_log:/var/log/onlyoffice
+      - doc_server_fonts:/usr/share/fonts/truetype/custom
+      - doc_server_redis:/var/lib/redis
+      - doc_server_db:/var/lib/postgresql
+      - doc_server_rabbitmq:/var/lib/rabbitmq
+      - doc_server_onlyoffice:/var/lib/onlyoffice
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    environment:
+      - VIRTUAL_HOST=
+      - LETSENCRYPT_HOST=
+      - LETSENCRYPT_EMAIL=
+      - JWT_HEADER=AuthorizationJwt
+    networks:
+      - default
+
+  redis:
+    image: redis:alpine
+    restart: always
+    container_name: data-redis
+    command: redis-server --requirepass {{ password }}
+    volumes:
+      - nextcloud_redis:/data
+    networks:
+      - default
+
+volumes:
+
+    postgresdb:
+      driver: local
+    nextcloud:
+      driver: local
+    doc_server:
+     driver: local
+    doc_server_log:
+      driver: local
+    doc_server_fonts:
+     driver: local
+    doc_server_redis:
+      driver: local
+    doc_server_db:
+     driver: local
+    doc_server_rabbitmq:
+      driver: local
+    doc_server_onlyoffice:
+     driver: local
+    nextcloud_redis:
+     driver: local
