@@ -1,0 +1,54 @@
+version: '2'
+
+networks:
+  default:
+    external:
+      name: network
+
+services:
+  nginx-proxy:
+    container_name: nginx-proxy
+    restart: always
+    image: jwilder/nginx-proxy:latest
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+      - proxy_certs:/etc/nginx/certs
+      - proxy_vhost:/etc/nginx/vhost.d
+      - proxy_html:/usr/share/nginx/html
+      - proxy_conf:/etc/nginx/conf.d
+      - proxy_dhparam:/etc/nginx/dhparam
+      - ./config//client_max_body_size.conf:/etc/nginx/conf.d/client_max_body_size.conf:ro
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+    environment:
+      - DEFAULT_HOST= {{ default host }}
+  nginx-proxy-acme:
+    container_name: nginx-proxy-acme
+    restart: always
+    image: nginxproxy/acme-companion:latest
+    volumes_from:
+      - nginx-proxy:rw
+    volumes:
+      - proxy_acme:/etc/acme.sh
+      - proxy_dhparam:/etc/nginx/dhparam
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    environment:
+      - NGINX_PROXY_CONTAINER=nginx-proxy
+      - DEFAULT_EMAIL= {{ email }}
+
+volumes:
+  proxy_certs:
+    external: true
+  proxy_vhost:
+  external: true
+  proxy_html:
+    external: true
+  proxy_conf:
+    external: true
+  proxy_acme:
+    external: true
+  proxy_dhparam:
+    external: true
