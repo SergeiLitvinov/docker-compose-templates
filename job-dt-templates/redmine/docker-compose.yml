@@ -1,0 +1,41 @@
+version: '2'
+
+networks:
+  default:
+    external:
+      name: network
+
+services:
+  redmine:
+    container_name: redmine
+    image: redmine:5.0.5-alpine
+    restart: always
+    volumes:
+      # - /media/raid/it/docker/redmine/plugins:/usr/src/redmine/plugins
+      # - /media/raid/it/docker/redmine/themes:/usr/src/redmine/public/themes
+      - /media/raid/it/docker/redmine/data:/usr/src/redmine/files
+      - /media/raid/it/docker/redmine/log:/var/log/redmine
+      - /media/raid/it/docker/redmine/configuration.yml:/usr/src/redmine/config/configuration.yml
+      - /etc/localtime:/etc/localtime:ro
+    environment:
+      - REDMINE_DB_POSTGRES=db
+      - REDMINE_DB_PASSWORD= {{ db pass }}
+      - MEMCACHE_HOST=memcached
+      # - REDMINE_PLUGINS_MIGRATE=true
+      - VIRTUAL_HOST=
+      - LETSENCRYPT_HOST=
+      - LETSENCRYPT_EMAIL=
+ 
+  db:
+    container_name: redmine-db
+    image: postgres:14
+    restart: always
+    environment:
+      - POSTGRES_PASSWORD= {{ db pass }}
+    volumes:
+      - redmine_postgresdb:/var/lib/postgresql/data
+      - /etc/localtime:/etc/localtime:ro
+     
+volumes:
+    redmine_postgresdb:
+      external: true
